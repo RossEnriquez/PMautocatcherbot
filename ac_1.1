@@ -1,0 +1,216 @@
+import discord
+from discord import DMChannel
+from pynput.keyboard import Key, Controller
+import time
+import random
+
+egg = 0
+status = 0
+fish_now = 0
+count_fish = 0
+pulled = 0
+
+client = discord.Client()
+key = Controller()
+token = '(INSERT PERSONAL BOT TOKEN HERE)'
+
+common = '#0855fb'
+uncommon = '#13b4e7'
+rare = '#fb8908'
+superRare = '#f8f407'
+legendary = '#a007f8'
+shiny = '#ff99cc'
+arceus = '#fffffa'
+darkrai = '#000000'
+shaymin = '#7cfc00'
+meloetta = '#b7f571'
+genesect = '#d8bed8'
+fishing = '#87cefa'
+
+def enter():
+    time.sleep(0.5)
+    key.press(Key.enter)
+    key.release(Key.enter)
+    return
+
+def egg_hatch():
+    global egg
+    time.sleep(2.5)
+    key.type(';egg hatch')
+    enter()
+    time.sleep(9)
+    key.type(';egg hold')
+    enter()
+    egg = 0
+    return
+
+def fish():
+    global count_fish
+    count_fish = 0
+    time.sleep(1.5)
+    key.type(';f')
+    time.sleep(0.5)
+    enter()
+
+def find_p():
+    global fish_now
+    if fish_now < 2:
+        fish_now += 1
+        pause = random.randint(85, 95) / 10.0
+        time.sleep(pause)
+        key.type(';p')
+        enter()
+    else:
+        fish_now = 0
+        fish()
+
+def find_p2():
+    time.sleep(1)
+    key.type(';p')
+    time.sleep(0.5)
+    enter()
+
+def c_gb(gb):
+    time.sleep(0.5)
+    key.type('gb')
+    enter()
+    if egg == 1:
+        egg_hatch()
+    if gb < 50:
+        time.sleep(2.5)
+        key.type(';s b 2 200')
+        time.sleep(3.5)
+        enter()
+    find_p()
+def c_ub(ub, check):
+    time.sleep(0.5)
+    key.type('ub')
+    enter()
+    if egg == 1:
+        egg_hatch()
+    if ub < 10:
+        time.sleep(2.5)
+        key.type(';s b 3 200')
+        time.sleep(5.5)
+        enter()
+    if check == 0:
+        find_p()
+def c_prb():
+    time.sleep(0.5)
+    key.type('prb')
+    enter()
+    if egg == 1:
+        egg_hatch()
+def c_mb():
+    time.sleep(0.5)
+    key.type('mb')
+    enter()
+    if egg == 1:
+        egg_hatch()
+
+@client.event
+async def on_message(message):
+    global status, egg
+    uid = '(INSERT USER ID HERE)'
+    user = await client.fetch_user(uid)
+    if message.author == client.user:
+        return
+
+    if str(message.author) == 'INSERT DISCORD TAG HERE':
+        if message.content == 'pause':
+            status = 0
+            print('Client has paused!')
+            await message.channel.send('Client has paused!')
+        elif message.content == 'start':
+            status = 1
+            print('Client has started!')
+            await message.channel.send('Client has started!')
+
+    if status == 1:
+        if str(message.author) == 'PokéMeow#6691':
+            if message.content.startswith('<@' + uid + '>, are you there?'):
+                await DMChannel.send(user, 'Captcha!')
+            elif message.content.startswith('<@' + uid + '>, please wait a few more seconds'):
+                time.sleep(4)
+                key.type(';p')
+                enter()
+            elif message.content.startswith('<@' + uid + '>, thank you, you may continue'):
+                time.sleep(0.5)
+                key.type(';p')
+                enter()
+
+            rarity = str(message.embeds[0].colour)
+            type = ((((str(message.embeds[0].footer).split('\''))[1].split('('))[1]).split(')'))[0]
+            data = str(message.embeds[0].footer).split('\\n')
+            greatball = int(((data[5].split('|'))[0].split())[1])
+            ultraball = int(((data[4].split('|'))[1].split())[1])
+
+            try:
+                if rarity == common or rarity == uncommon or rarity == rare or rarity == superRare:
+                    caught = ((str(message.embeds[0].description).split())[4].split('>'))[1]
+                    if rarity != superRare:
+                        streak = int((data[1].split())[2])
+                    else:
+                        streak = int((data[1].split())[3])
+                    if (rarity == rare and streak > 3 and (1.0 * (streak + 1)) % 5 == 0.0) or rarity == superRare:
+                        c_ub(ultraball, 0)
+                    else:
+                        if caught.startswith('<:dexcaught:'):
+                            c_gb(greatball)
+                        else:
+                            c_ub(ultraball, 0)
+                else:
+                    if rarity == legendary:
+                        caught = ((str(message.embeds[0].description).split())[4].split('>'))[1]
+                        await DMChannel.send(user, 'You found a LEGENDARY Pokemon!')
+                        if caught.startswith('<:dexcaught:'):
+                            c_ub(ultraball, 0)
+                        else:
+                            c_mb()
+                    elif rarity == shiny:
+                        await DMChannel.send(user, 'You found a SHINY Pokemon!')
+                        if type.startswith('Full-odds'):
+                            c_prb()
+                        else:
+                            c_mb()
+                    else:
+                        await DMChannel.send(user, 'You found a SPECIAL Pokemon!')
+                        c_mb()
+            except IndexError:
+                print('bruh')
+
+@client.event
+async def on_message_edit(message, after):
+    global egg, count_fish, pulled
+    uid = '(INSERT USER ID HERE)'
+    user = await client.fetch_user(uid)
+    rarity = str(message.embeds[0].colour)
+
+    if rarity == fishing:
+        if pulled == 0:
+            pulling = (after.embeds[0].description.split('...\n\n'))[1]
+            if pulling.startswith('Oh! A bite!') and count_fish == 0:
+                count_fish = 1
+                time.sleep(0.5)
+                key.type('pull')
+                enter()
+                pulled = 1
+                on_message_edit()
+            elif count_fish == 0:
+                count_fish = 1
+                find_p2()
+        else:
+            pokemon = (after.embeds[0].description.split('**')[3])
+            pulled = 0
+            if pokemon.startswith('Shiny') or pokemon.startswith('Golden'):
+                await DMChannel.send(user, 'You fished a SPECIAL Pokemon!')
+                time.sleep(1)
+                key.type('mb')
+                enter()
+            else:
+                time.sleep(1)
+                key.type('gb')
+                enter()
+                find_p2()
+
+client.run(token)
