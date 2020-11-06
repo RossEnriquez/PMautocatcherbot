@@ -1,0 +1,24 @@
+Common: #0855fb
+Uncommon: #13b4e7
+Rare: #fb8908
+Super Rare: #f8f407
+Legendary: #a007f8
+Shiny: #ff99cc
+Genesect: #d8bed8
+Darkrai: #00000
+Arceus: #fffffa
+Shaymin: #7cfc00
+Meloetta: #b7f571
+
+mb:
+mewtwo
+dialga
+palkia
+regigigas
+giratina
+cobalion
+terrakion
+virizion
+reshiram
+zekrom
+kyurem
